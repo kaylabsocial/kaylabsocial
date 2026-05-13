@@ -1,33 +1,62 @@
-SELECT --i.cns_fips_tract_cd as Census_Tract, prch_str_nbr,
-dd.amc_year, dd.amc_period, dd.amc_quarter, cns.cbsa_nm, CASE WHEN prch_str_nbr in (129,130,139) THEN 'Online' ELSE 'Store' END as Channel, prch_str_nbr , 
-case 
-      when m.fin_divn_nbr in (77) or PARENT_DIV_ID in (71,72,75,76,90) then 'Backstage'
-      when prch_str_nbr in (130) or PARENT_DIV_ID in (66)  then 'Marketplace'
-      when PARENT_DIV_ID in (15,10,18,12) then 'C.Core'
-      when PARENT_DIV_ID in (19,14,17) then 'Beauty'
-      when Parent_div_id in (44) then 'BigTicket'
-      when parent_div_id in (52) then 'Kids'
-      when parent_div_id in (62) then 'Leased'
-      when parent_div_id in (50) then 'Mens'
-      when parent_div_id in (47,60,53,70,46,48,41,59,65,69,10006,0,66) then 'Other'
-      when parent_div_id in (23,24,29,26,13,25,22) then 'RTW'
-      when parent_div_id in (43) then 'Soft Home'
-      when m.dept_nbr in (3) then 'GOB'
-      else 'Other' 
-    end as FOB_category,
-  SUM(m.rdsfin_rps_netnet_prch_amt) as Sales
-  FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all` AS m
-LEFT JOIN `mtech-daas-customer-sdata.rfnd_cust.individual` AS i
-ON m.indiv_id = i.indiv_id   AND m.fin_divn_nbr = i.fin_divn_nbr
-LEFT JOIN `mtech-daas-reference-pdata.rfnd_ref_v.DATE_DIM_V` dd on m.txn_dt = dd.greg_date
-left join `mtech-daas-product-pdata.rfnd_prod_v.MCH_HIER_V` mch 
-    on case when m.fin_divn_nbr = 71 then 12 end = mch.divn_nbr 
-   and m.DEPT_NBR = mch.DEPT_NBR
-LEFT JOIN `mtech-daas-customer-pdata.trst_cust_mcy_v.cns_tracts_geo_unit_summ_snap_v` cns on  safe_cast(i.cns_fips_tract_cd as int) = cns.Tract_ID
+-- Kaylyst: Regional Sales Performance Analysis
+-- Purpose: Analyze sales by geography, channel, and product category
+
+SELECT
+    dd.amc_year,
+    dd.amc_period,
+    dd.amc_quarter,
+    cns.cbsa_nm,
+
+    CASE
+        WHEN prch_str_nbr IN (129,130,139) THEN 'Online'
+        ELSE 'Store'
+    END AS channel,
+
+    CASE
+        WHEN m.fin_divn_nbr = 77 OR parent_div_id IN (71,72,75,76,90) THEN 'Backstage'
+        WHEN prch_str_nbr = 130 OR parent_div_id = 66 THEN 'Marketplace'
+        WHEN parent_div_id IN (15,10,18,12) THEN 'C.Core'
+        WHEN parent_div_id IN (19,14,17) THEN 'Beauty'
+        WHEN parent_div_id = 44 THEN 'BigTicket'
+        WHEN parent_div_id = 52 THEN 'Kids'
+        WHEN parent_div_id = 62 THEN 'Leased'
+        WHEN parent_div_id = 50 THEN 'Mens'
+        WHEN parent_div_id IN (47,60,53,70,46,48,41,59,65,69,10006,0,66) THEN 'Other'
+        WHEN parent_div_id IN (23,24,29,26,13,25,22) THEN 'RTW'
+        WHEN parent_div_id = 43 THEN 'Soft Home'
+        WHEN m.dept_nbr = 3 THEN 'GOB'
+        ELSE 'Other'
+    END AS fob_category,
+
+    SUM(m.rdsfin_rps_netnet_prch_amt) AS sales
+
+FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all` m
+
+LEFT JOIN `mtech-daas-customer-sdata.rfnd_cust.individual` i
+    ON m.indiv_id = i.indiv_id
+    AND m.fin_divn_nbr = i.fin_divn_nbr
+
+LEFT JOIN `mtech-daas-reference-pdata.rfnd_ref_v.DATE_DIM_V` dd
+    ON m.txn_dt = dd.greg_date
+
+LEFT JOIN `mtech-daas-product-pdata.rfnd_prod_v.MCH_HIER_V` mch
+    ON CASE WHEN m.fin_divn_nbr = 71 THEN 12 END = mch.divn_nbr
+    AND m.dept_nbr = mch.dept_nbr
+
+LEFT JOIN `mtech-daas-customer-pdata.trst_cust_mcy_v.cns_tracts_geo_unit_summ_snap_v` cns
+    ON SAFE_CAST(i.cns_fips_tract_cd AS INT) = cns.tract_id
+
 WHERE m.fin_divn_nbr = 71
-and dd.amc_year in (2025,2024,2023)
-and cbsa_nm in ('Washington-Arlington-Alexandria, DC-VA-MD-WV Metropolitan Statistical Area','Boston-Cambridge-Newton, MA-NH Metropolitan Statistical Area','Dallas-Fort Worth-Arlington, TX Metropolitan Statistical Area','Atlanta-Sandy Springs-Roswell, GA Metropolitan Statistical Area','Philadelphia-Camden-Wilmington, PA-NJ-DE-MD Metropolitan Statistical Area')
-/*and amc_day_of_year <= (select max(amc_day_of_year) from `mtech-daas-reference-pdata.rfnd_ref_v.DATE_DIM_V` WHERE week_cnt = -1)*/
-and (safe_cast(m.dept_nbr as int) in (0,5,15,19,36,37,40,46) or safe_cast(m.dept_nbr as int) > 49)
-GROUP BY 1,2,3,4,5,6,7
-order by 1,2,3,4
+    AND dd.amc_year IN (2023, 2024, 2025)
+    AND cns.cbsa_nm IN (
+        'Washington-Arlington-Alexandria, DC-VA-MD-WV Metropolitan Statistical Area',
+        'Boston-Cambridge-Newton, MA-NH Metropolitan Statistical Area',
+        'Dallas-Fort Worth-Arlington, TX Metropolitan Statistical Area',
+        'Atlanta-Sandy Springs-Roswell, GA Metropolitan Statistical Area',
+        'Philadelphia-Camden-Wilmington, PA-NJ-DE-MD Metropolitan Statistical Area'
+    )
+    AND SAFE_CAST(m.dept_nbr AS INT) IN (0,5,15,19,36,37,40,46)
+    OR SAFE_CAST(m.dept_nbr AS INT) > 49
+
+GROUP BY 1,2,3,4,5,6
+ORDER BY 1,2,3,4;
