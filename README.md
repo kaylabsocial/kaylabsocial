@@ -1,6 +1,6 @@
 # Kaylyst
 
-Data Analytics Consulting for Small Businesses
+Data Analytics Consultant helping businesses turn data into dashboards and decision-ready insights.
 
 ---
 
@@ -12,37 +12,59 @@ I help businesses turn messy data into clear insights, dashboards, and reporting
 
 ## Services
 
-* SQL data analysis and reporting
-* Power BI dashboard development
-* KPI tracking and business performance reporting
-* Customer and sales analysis
-* Data cleaning and organization
+* SQL data analysis and reporting  
+* Power BI dashboard development  
+* KPI tracking and business performance reporting  
+* Customer and sales analysis  
+* Data cleaning and organization  
 
 ---
 
 ## Tools
 
-* Power BI
-* SQL
-* Python (pandas)
-* Excel / Google Sheets
-* GitHub
+* Power BI  
+* SQL  
+* Python (pandas)  
+* Excel / Google Sheets  
+* GitHub  
 
 ---
 
-## Example Work
+## 📊 Portfolio Work
 
-### Sales Dashboard
+Below are examples of analytics projects demonstrating how I translate data into business insights.
 
-Revenue tracking, product performance, and customer trends visualized in a business dashboard.
+---
 
-### Customer Retention Analysis
+### Customer Cross-Shopping Analysis
 
-Cohort analysis to understand repeat customers and churn behavior.
+**Business Problem**  
+Understand customer overlap across stores within a specific market and how cross-shopping behavior varies by demographics and product categories.
 
-### Marketing Performance Analysis
+**Approach**
+- Filtered transactions to a defined geographic market
+- Enriched data with customer demographics (income, age, segment)
+- Classified customers as single-store vs cross-shoppers
+- Aggregated trends across store, category, and demographics
 
-Conversion tracking and campaign performance insights.
+**Techniques Used**
+- Window functions (`ROW_NUMBER`)
+- Multi-CTE SQL modeling
+- Customer segmentation
+- Aggregation at customer level
+
+**Outcome**
+- Identifies customer overlap across stores  
+- Highlights cross-shopping behavior patterns  
+- Supports market strategy and targeting decisions  
+
+👉 SQL: `customer_cross_shop_analysis.sql`
+
+---
+
+### Additional Work
+
+More analytics projects, including sales performance and customer analysis, are available in this repository.
 
 ---
 
